@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = ::ActiveRecord::OnDemand::VERSION
   s.date        = '2015-01-06'
   s.summary     = 'ActiveRecord On-demand'
-  s.description = 'Raw DB Results'
+  s.description = 'Fast access to database results without the memory overhead of ActiveRecord objects'
   s.authors     = ['Steve Frank']
   s.email       = %w(steve@cloudhealthtech.com lardcanoe@gmail.com)
   s.homepage    = 'https://github.com/CloudHealth/ar-ondemand'
@@ -18,4 +18,7 @@ Gem::Specification.new do |s|
   s.executables = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
 
   s.require_paths = %w(lib)
+
+  s.add_dependency 'activesupport', '>= 3.2'
+  s.add_dependency 'activerecord',  '>= 3.2'
 end

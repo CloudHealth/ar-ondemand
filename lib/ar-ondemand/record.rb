@@ -1,6 +1,7 @@
 module ActiveRecord
   module OnDemand
     class Record
+      #TODO: include ::ActiveModel::Dirty
       attr_reader :changes
 
       def initialize(record, model, defaults)
