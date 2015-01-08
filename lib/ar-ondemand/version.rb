@@ -1,5 +1,3 @@
-module ActiveRecord
-  module OnDemand
-    VERSION = '1.0.1'
-  end
+module ArOnDemand
+  VERSION = '1.0.1'
 end
