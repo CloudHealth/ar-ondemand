@@ -19,11 +19,24 @@ module ActiveRecord
         @results.rows.length
       end
       alias_method :count, :length
+      alias_method :size, :length
 
       def each
         @results.rows.each do |row|
           yield ::ActiveRecord::OnDemand::Record.new(convert_to_hash(row), @model, nil)
         end
+      end
+
+      def first
+        row = @results.rows.first
+        return nil if row.nil?
+        ::ActiveRecord::OnDemand::Record.new convert_to_hash(row), @model, nil
+      end
+
+      def last
+        row = @results.rows.last
+        return nil if row.nil?
+        ::ActiveRecord::OnDemand::Record.new convert_to_hash(row), @model, nil
       end
 
       protected
