@@ -7,11 +7,9 @@ module ActiveRecord
     module ForReadingExtension
       extend ::ActiveSupport::Concern
 
+      # Ripped from the find_in_batches function, but customized to return an ::ActiveRecord::OnDemand::ResultSet
       def for_reading(options = {})
-        if options.empty?
-          results = query(self)
-          return ::ActiveRecord::OnDemand::ResultSet.new(self.arel.engine, results)
-        end
+        return query(self) if options.empty?
 
         relation = self
 
