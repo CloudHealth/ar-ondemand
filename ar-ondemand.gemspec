@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.authors     = ['Steve Frank']
   s.email       = %w(steve@cloudhealthtech.com lardcanoe@gmail.com)
   s.homepage    = 'https://github.com/CloudHealth/ar-ondemand'
+  s.license     = 'MIT'
 
   s.files       = `git ls-files`.split("\n")
 
