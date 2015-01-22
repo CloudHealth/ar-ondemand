@@ -1,0 +1,8 @@
+.bundle
+vendor/
+bin/
+*.log
+spec/log
+.ruby*
+.rspec
+ar-ondemand*.gem
