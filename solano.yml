@@ -1,0 +1,8 @@
+---
+:tddium:
+  :ruby_version: ruby-1.9.3-p392
+  :coverage: false
+  :rake:
+    :rails_env: test
+  :environment:
+    TZ: UTC
