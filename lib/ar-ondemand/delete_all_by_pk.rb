@@ -21,9 +21,9 @@ module ActiveRecord
         end
 
         start = options.delete(:start)
-        batch_size = options.delete(:batch_size) || 1000
+        batch_size = options.delete(:batch_size)
 
-        relation = relation.reorder(batch_order).limit(batch_size)
+        relation = relation.reorder(batch_order).limit(batch_size) if batch_size
         records = start ? query(relation.where(table[primary_key].gteq(start))) : query(relation)
 
         while records.any?
@@ -32,7 +32,7 @@ module ActiveRecord
 
           self.unscoped.where(id: records).delete_all
 
-          break if records_size < batch_size
+          break if batch_size.nil? || records_size < batch_size
 
           records = query relation.where(table[primary_key].gt(primary_key_offset))
         end
