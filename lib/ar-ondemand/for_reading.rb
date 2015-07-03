@@ -18,7 +18,7 @@ module ActiveRecord
         end
 
         if (finder_options = options.except(:start, :batch_size)).present?
-          raise "You can't specify an order, it's forced to be #{batch_order}" if options[:order].present?
+          raise "You can't specify an order, it's forced to be #{batch_order_for_reading}" if options[:order].present?
           raise "You can't specify a limit, it's forced to be the batch_size"  if options[:limit].present?
 
           relation = apply_finder_options(finder_options)
@@ -27,8 +27,8 @@ module ActiveRecord
         start = options.delete(:start)
         batch_size = options.delete(:batch_size) || 1000
 
-        relation = relation.reorder(batch_order).limit(batch_size)
-        records = start ? query(relation.where(table[primary_key].gteq(start))) : query(relation)
+        relation = relation.reorder(batch_order_for_reading).limit(batch_size)
+        records = query_for_reading(start ? relation.where(table[primary_key].gteq(start)) : relation)
 
         while records.any?
           records_size = records.size
@@ -39,7 +39,7 @@ module ActiveRecord
           break if records_size < batch_size
 
           if primary_key_offset
-            records = query relation.where(table[primary_key].gt(primary_key_offset))
+            records = query_for_reading relation.where(table[primary_key].gt(primary_key_offset))
           else
             raise "Primary key not included in the custom select clause"
           end
@@ -48,12 +48,12 @@ module ActiveRecord
 
       private
 
-      def query(ar)
+      def query_for_reading(ar)
         results = ::ActiveRecord::Base.connection.exec_query ar.to_sql
         ::ActiveRecord::OnDemand::ResultSet.new self.arel.engine, results
       end
 
-      def batch_order
+      def batch_order_for_reading
         "#{quoted_table_name}.#{quoted_primary_key} ASC"
       end
     end
