@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ar-ondemand (1.0.1)
+    ar-ondemand (1.0.4)
       activerecord (>= 3.2)
       activesupport (>= 3.2)
 
