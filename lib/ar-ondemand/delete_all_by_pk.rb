@@ -5,7 +5,8 @@ module ActiveRecord
     module DeleteAllByPkExtension
       extend ::ActiveSupport::Concern
 
-      # Ripped from the find_in_batches function, but customized to return an ::ActiveRecord::OnDemand::ResultSet
+      # Use this instead of delete_all to perform a delete using the PK of the table, which prevents a complete table scan that locks it
+      # Based on find_in_batches function
       def delete_all_by_pk(options = {})
         relation = self
 
