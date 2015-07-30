@@ -26,17 +26,20 @@ module ActiveRecord
 
         relation = relation.reorder(batch_order_delete_all_by_pk).limit(batch_size) if batch_size
         records = query_delete_all_by_pk(start ? relation.where(table[primary_key].gteq(start)) : relation)
+        deleted = 0
 
         while records.any?
           records_size = records.size
           primary_key_offset = records.last
 
-          self.unscoped.where(id: records).delete_all
+          deleted += self.unscoped.where(id: records).delete_all
 
           break if batch_size.nil? || records_size < batch_size
 
           records = query_delete_all_by_pk relation.where(table[primary_key].gt(primary_key_offset))
         end
+
+        deleted
       end
 
       private
