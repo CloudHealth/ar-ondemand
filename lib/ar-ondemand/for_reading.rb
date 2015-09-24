@@ -9,7 +9,14 @@ module ActiveRecord
 
       # Ripped from the find_in_batches function, but customized to return an ::ActiveRecord::OnDemand::ResultSet
       def for_reading(options = {})
-        return query(self) if options.empty?
+        if options.empty?
+          res = query_for_reading(self)
+          if block_given?
+            yield res
+            return
+          end
+          return res
+        end
 
         relation = self
 
