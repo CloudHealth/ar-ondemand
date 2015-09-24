@@ -10,8 +10,8 @@ module ActiveRecord
       def initialize(model, results, key_column, defaults)
         super(model, results)
 
-        raise "Key column cannot be blank." if key_column.blank?
-        raise "Defaults cannot be empty." if defaults.empty?
+        raise 'Key column cannot be blank.' if key_column.blank?
+        raise 'Defaults cannot be empty.' if defaults.empty?
 
         @key_column = key_column.to_s
         @defaults = defaults
@@ -26,16 +26,30 @@ module ActiveRecord
       end
 
       def [](key)
-        raise "Search key cannot be blank." if key.blank?
+        raise 'Search key cannot be blank.' if key.blank?
         rec = @results.rows.find { |x| x[@key_index] == key }
         if rec.nil?
-          if @has_any_assets
-            args = @defaults.values + [key]
-            @model.unscoped.send(@find_by_method, *args)
-          else
-            @new_params[@key_column.to_sym] = key
-            @model.new @new_params
+          rec = if @has_any_assets
+                  args = @defaults.values + [key]
+                  @model.unscoped.send(@find_by_method, *args)
+                else
+                  @new_params[@key_column.to_sym] = key
+                  @model.new @new_params
+                end
+
+          unless rec.persisted?
+            # These are not getting initialized for some reason, so set using what is passed in
+            @defaults.each_pair do |k, v|
+              meth = k.to_s
+              rec.send("#{meth[0...-3]}=", v) if meth.end_with? '_id'
+            end
+            # This helps prevent a lookup into the db when we know there couldn't be any data yet
+            @model.reflections.select { |_, v| v.macro == :has_and_belongs_to_many }.keys.each do |r|
+              rec.send("#{r}=", [])
+            end
           end
+
+          rec
         else
           ::ActiveRecord::OnDemand::Record.new convert_to_hash(rec), @model, @defaults
         end
