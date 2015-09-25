@@ -40,8 +40,10 @@ module ActiveRecord
           unless rec.persisted?
             # These are not getting initialized for some reason, so set using what is passed in
             @defaults.each_pair do |k, v|
+              next unless v.is_a?(::ActiveRecord::Base)
               meth = k.to_s
-              rec.send("#{meth[0...-3]}=", v) if meth.end_with? '_id'
+              next unless meth.end_with? '_id'
+              rec.send("#{meth[0...-3]}=", v)
             end
             # This helps prevent a lookup into the db when we know there couldn't be any data yet
             @model.reflections.select { |_, v| v.macro == :has_and_belongs_to_many }.keys.each do |r|
