@@ -23,11 +23,18 @@ module ActiveRecord
         @has_any_assets = !ids.empty? || @model.unscoped.where(@defaults).exists?
         @new_params = @defaults.dup
         @new_params[@key_column.to_sym] = nil
+        @results_to_hash = @results.rows.inject({}) do |h, row|
+          raise "Duplicate key found for result set: #{row[@key_index]}" if h.has_key? row[@key_index]
+          h[row[@key_index]] = row
+          h
+        end
+        
+        self
       end
 
       def [](key)
         raise 'Search key cannot be blank.' if key.blank?
-        rec = @results.rows.find { |x| x[@key_index] == key }
+        rec = @results_to_hash[key]
         if rec.nil?
           rec = if @has_any_assets
                   args = @defaults.values + [key]
