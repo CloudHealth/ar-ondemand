@@ -57,7 +57,7 @@ module ActiveRecord
 
       def query_for_reading(ar)
         results = ::ActiveRecord::Base.connection.exec_query ar.to_sql
-        ::ActiveRecord::OnDemand::ResultSet.new self.arel.engine, results
+        ::ActiveRecord::OnDemand::ResultSet.new self.arel.engine, results, readonly: true
       end
 
       def batch_order_for_reading

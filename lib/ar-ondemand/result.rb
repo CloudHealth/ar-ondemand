@@ -3,11 +3,13 @@ module ActiveRecord
     class ResultSet
       include ::Enumerable
 
-      def initialize(model, results)
+      def initialize(model, results, options = {})
         @model = model
         @results = results
         @column_types = Hash[@model.columns.map { |x| [x.name, x] }]
         @col_indexes = HashWithIndifferentAccess[@results.columns.each_with_index.map { |x, i| [x,i] }]
+        @readonly = options.delete :readonly
+        @readonly_klass = @readonly ? create_readonly_class : nil
       end
 
       def ids
@@ -22,24 +24,32 @@ module ActiveRecord
       alias_method :size, :length
 
       def each
-        @results.rows.each do |row|
-          yield ::ActiveRecord::OnDemand::Record.new(convert_to_hash(row), @model, nil)
-        end
+        @results.rows.each { |row| yield result_to_record(row) }
       end
 
       def first
-        row = @results.rows.first
-        return nil if row.nil?
-        ::ActiveRecord::OnDemand::Record.new convert_to_hash(row), @model, nil
+        result_to_record @results.rows.first
       end
 
       def last
-        row = @results.rows.last
-        return nil if row.nil?
-        ::ActiveRecord::OnDemand::Record.new convert_to_hash(row), @model, nil
+        result_to_record @results.rows.last
       end
 
       protected
+
+      def result_to_record(row)
+        return nil if row.nil?
+        if @readonly
+          convert_to_struct @readonly_klass, row
+        else
+          ::ActiveRecord::OnDemand::Record.new convert_to_hash(row), @model, nil
+        end
+      end
+
+      def create_readonly_class
+        attrs = @col_indexes.keys.map(&:to_sym)
+        ::Struct.new *attrs
+      end
 
       def convert_to_hash(rec)
         # TODO: Is using HashWithIndifferentAccess[] more efficient?
@@ -48,6 +58,14 @@ module ActiveRecord
           h[k] = @column_types[k].type_cast rec[v]
         end
         h.with_indifferent_access
+      end
+
+      def convert_to_struct(klass, rec)
+        vals = []
+        @col_indexes.each_pair do |k, v|
+          vals << @column_types[k].type_cast(rec[v])
+        end
+        klass.new *vals
       end
     end
   end
