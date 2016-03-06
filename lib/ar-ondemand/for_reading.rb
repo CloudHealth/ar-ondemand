@@ -7,10 +7,14 @@ module ActiveRecord
     module ForReadingExtension
       extend ::ActiveSupport::Concern
 
+      def raw_results
+        query_for_reading self, readonly: true, raw: true
+      end
+
       # Ripped from the find_in_batches function, but customized to return an ::ActiveRecord::OnDemand::ResultSet
       def for_reading(options = {})
         if options.empty?
-          res = query_for_reading(self)
+          res = query_for_reading self, readonly: true
           if block_given?
             yield res
             return
@@ -35,7 +39,7 @@ module ActiveRecord
         batch_size = options.delete(:batch_size) || 1000
 
         relation = relation.reorder(batch_order_for_reading).limit(batch_size)
-        records = query_for_reading(start ? relation.where(table[primary_key].gteq(start)) : relation)
+        records = query_for_reading(start ? relation.where(table[primary_key].gteq(start)) : relation, readonly: true)
 
         while records.any?
           records_size = records.size
@@ -46,18 +50,18 @@ module ActiveRecord
           break if records_size < batch_size
 
           if primary_key_offset
-            records = query_for_reading relation.where(table[primary_key].gt(primary_key_offset))
+            records = query_for_reading relation.where(table[primary_key].gt(primary_key_offset)), readonly: true
           else
-            raise "Primary key not included in the custom select clause"
+            raise 'Primary key not included in the custom select clause'
           end
         end
       end
 
       private
 
-      def query_for_reading(ar)
+      def query_for_reading(ar, options = {})
         results = ::ActiveRecord::Base.connection.exec_query ar.to_sql
-        ::ActiveRecord::OnDemand::ResultSet.new self.arel.engine, results, readonly: true
+        ::ActiveRecord::OnDemand::ResultSet.new self.arel.engine, results, options
       end
 
       def batch_order_for_reading

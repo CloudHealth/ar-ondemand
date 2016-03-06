@@ -3,11 +3,14 @@ module ActiveRecord
     class ResultSet
       include ::Enumerable
 
+      CACHED_READONLY_CLASSES ||= {}
+
       def initialize(model, results, options = {})
         @model = model
         @results = results
         @column_types = Hash[@model.columns.map { |x| [x.name, x] }]
         @col_indexes = HashWithIndifferentAccess[@results.columns.each_with_index.map { |x, i| [x,i] }]
+        @raw = options.delete :raw
         @readonly = options.delete :readonly
         @readonly_klass = @readonly ? create_readonly_class : nil
       end
@@ -39,6 +42,7 @@ module ActiveRecord
 
       def result_to_record(row)
         return nil if row.nil?
+        return row if @raw
         if @readonly
           convert_to_struct @readonly_klass, row
         else
@@ -48,7 +52,8 @@ module ActiveRecord
 
       def create_readonly_class
         attrs = @col_indexes.keys.map(&:to_sym)
-        ::Struct.new *attrs
+        return CACHED_READONLY_CLASSES[attrs] if CACHED_READONLY_CLASSES[attrs]
+        CACHED_READONLY_CLASSES[attrs] = ::Struct.new *attrs
       end
 
       def convert_to_hash(rec)
