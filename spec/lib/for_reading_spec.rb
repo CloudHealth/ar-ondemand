@@ -19,7 +19,7 @@ describe 'ForReading' do
 
     context 'Iterating' do
       before(:each) do
-        (1..100).each do
+        (1..25).each do
           create(:audit_record)
         end
       end
@@ -29,7 +29,15 @@ describe 'ForReading' do
         AuditRecord.where(customer_id: 1).for_reading.each do |r|
           total += 1
         end
-        total.should eq(100)
+        total.should eq(25)
+      end
+
+      it 'should support iterating' do
+        total = 0
+        AuditRecord.for_reading.each do |r|
+          total += 1
+        end
+        total.should eq(25)
       end
 
       it 'should produce same results as regular iterating' do

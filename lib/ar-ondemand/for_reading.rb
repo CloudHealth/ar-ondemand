@@ -4,71 +4,75 @@ require 'ar-ondemand/record'
 
 module ActiveRecord
   module OnDemand
-    module ForReadingExtension
+    module Reading
       extend ::ActiveSupport::Concern
 
-      def raw_results
-        query_for_reading self, readonly: true, raw: true
-      end
+      module ClassMethods
+        def raw_results
+          query_for_reading self, readonly: true, raw: true
+        end
 
-      # Ripped from the find_in_batches function, but customized to return an ::ActiveRecord::OnDemand::ResultSet
-      def for_reading(options = {})
-        if options.empty?
-          res = query_for_reading self, readonly: true
-          if block_given?
-            yield res
-            return
+        # Ripped from the find_in_batches function, but customized to return an ::ActiveRecord::OnDemand::ResultSet
+        def for_reading(options = {})
+          if options.empty?
+            res = query_for_reading self, readonly: true
+            if block_given?
+              yield res
+              return
+            end
+            return res
           end
-          return res
-        end
 
-        relation = self
+          relation = self
 
-        unless arel.orders.blank? && arel.taken.blank?
-          ActiveRecord::Base.logger.warn("Scoped order and limit are ignored, it's forced to be batch order and batch size")
-        end
+          unless arel.orders.blank? && arel.taken.blank?
+            ::ActiveRecord::Base.logger.warn("Scoped order and limit are ignored, it's forced to be batch order and batch size")
+          end
 
-        if (finder_options = options.except(:start, :batch_size)).present?
-          raise "You can't specify an order, it's forced to be #{batch_order_for_reading}" if options[:order].present?
-          raise "You can't specify a limit, it's forced to be the batch_size"  if options[:limit].present?
+          if (finder_options = options.except(:start, :batch_size)).present?
+            raise "You can't specify an order, it's forced to be #{batch_order_for_reading}" if options[:order].present?
+            raise "You can't specify a limit, it's forced to be the batch_size"  if options[:limit].present?
 
-          relation = apply_finder_options(finder_options)
-        end
+            relation = apply_finder_options(finder_options)
+          end
 
-        start = options.delete(:start)
-        batch_size = options.delete(:batch_size) || 1000
+          start = options.delete(:start)
+          batch_size = options.delete(:batch_size) || 1000
 
-        relation = relation.reorder(batch_order_for_reading).limit(batch_size)
-        records = query_for_reading(start ? relation.where(table[primary_key].gteq(start)) : relation, readonly: true)
+          relation = relation.reorder(batch_order_for_reading).limit(batch_size)
+          records = query_for_reading(start ? relation.where(table[primary_key].gteq(start)) : relation, readonly: true)
 
-        while records.any?
-          records_size = records.size
-          primary_key_offset = records.last.id
+          while records.any?
+            records_size = records.size
+            primary_key_offset = records.last.id
 
-          yield records
+            yield records
 
-          break if records_size < batch_size
+            break if records_size < batch_size
 
-          if primary_key_offset
-            records = query_for_reading relation.where(table[primary_key].gt(primary_key_offset)), readonly: true
-          else
-            raise 'Primary key not included in the custom select clause'
+            if primary_key_offset
+              records = query_for_reading relation.where(table[primary_key].gt(primary_key_offset)), readonly: true
+            else
+              raise 'Primary key not included in the custom select clause'
+            end
           end
         end
-      end
 
-      private
+        private
 
-      def query_for_reading(ar, options = {})
-        results = ::ActiveRecord::Base.connection.exec_query ar.to_sql
-        ::ActiveRecord::OnDemand::ResultSet.new self.arel.engine, results, options
-      end
+        def query_for_reading(ar, options = {})
+          ar = ar.scoped unless ar.respond_to?(:to_sql)
+          results = ::ActiveRecord::Base.connection.exec_query ar.to_sql
+          ::ActiveRecord::OnDemand::ResultSet.new ar.arel.engine, results, options
+        end
 
-      def batch_order_for_reading
-        "#{quoted_table_name}.#{quoted_primary_key} ASC"
+        def batch_order_for_reading
+          "#{quoted_table_name}.#{quoted_primary_key} ASC"
+        end
       end
     end
   end
 end
 
-::ActiveRecord::Relation.send(:include, ::ActiveRecord::OnDemand::ForReadingExtension)
+::ActiveRecord::Base.send     :include, ::ActiveRecord::OnDemand::Reading
+::ActiveRecord::Relation.send :include, ::ActiveRecord::OnDemand::Reading::ClassMethods
