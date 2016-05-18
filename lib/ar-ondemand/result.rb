@@ -60,7 +60,11 @@ module ActiveRecord
         # TODO: Is using HashWithIndifferentAccess[] more efficient?
         h = {}
         @col_indexes.each_pair do |k, v|
-          h[k] = @column_types[k].type_cast rec[v]
+          if @column_types[k]
+            h[k] = @column_types[k].type_cast rec[v]
+          else
+            h[k] = rec[v]
+          end
         end
         h.with_indifferent_access
       end
