@@ -7,7 +7,7 @@ The `ar-ondemand` gem adds functionality to ActiveRecord to help deal with AR's 
 
 # Getting Started
 
-```
+```rb
 require 'ar-ondemand'
 ```
 
@@ -34,7 +34,7 @@ ActiveRecord model so that all the real functionality you'd expect, such as vali
 
 ### Usage
 
-```
+```rb
 assets = Widget.on_demand :identifier, {customer_id: 1, account_id: 42}
 source.each do |dso|
   w = assets[dso[:identifier]]
@@ -57,13 +57,13 @@ method makes it easy to get access to ActiveRecord-like functionality at 100th t
 
 Let's say you have some Widget's. Instead of:
 
-```
+```rb
 Widget.where(customer_id: 1).each { |r| ... }
 ```
 
 use `for_reading` and get a significant speed boost, and use far less memory:
 
-```
+```rb
 Widget.where(customer_id: 1).for_reading.each { |r| ... }
 ```
 
@@ -71,24 +71,24 @@ The big limitation is that you can't use `.includes` so you have to be writing a
 
 ### Batch Results
 
-```
+```rb
 Widget.where(customer_id: 1).for_reading(batch_size: 50000).each { |b| b.each { |r| } }
 ```
 
-### raw_results
+## raw_results
 
 This is just a nice little helper to get the raw database results, which you'd get by calling `ActiveRecord::Base.connection.select_all`
 but for some reason you can't call that on a model.
 
-```
+```rb
 ActiveRecord::Base.connection.select_all "select * from widgets"
 ActiveRecord::Base.connection.select_all "select * from widgets where customer_id = 1"
 ActiveRecord::Base.connection.select_all "select * from widgets where customer_id = 1 limit 100000"
 ```
 
-use:
+### Usage
 
-```
+```rb
 Widget.raw_results
 Widget.where(customer_id: 1).raw_results
 Widget.where(customer_id: 1).limit(100_000).raw_results
@@ -103,7 +103,7 @@ change your code to use batching.
 
 ### Usage
 
-```
+```rb
 def run
   get_objects.each do |r|
     do_something r
@@ -117,7 +117,7 @@ end
 
 Additional usage:
 
-```
+```rb
 Widget.where(customer_id: 1).for_streaming(batch_size: 100_000).each { |r| }
 Widget.where(customer_id: 1).for_streaming(for_reading: true).each { |r| }
 Widget.where(customer_id: 1).for_streaming(for_reading: true, batch_size: 1_000_000).each { |r| }
@@ -132,13 +132,13 @@ the primary keys as the `where` condition. This function does that all for you.
 
 ### Usage
 
-```
+```rb
 Widget.delete_all_by_pk
 Widget.where(Widget[:customer_id].eq(1).and(Widget[:usage].gt(42))).delete_all_by_pk
 ```
 
 If you know you could be deleting millions, then we recommend batching the deletes:
 
-```
+```rb
 Widget.where(Widget[:customer_id].eq(1).and(Widget[:usage].gt(42))).delete_all_by_pk(batch_size: 250_000)
 ```
