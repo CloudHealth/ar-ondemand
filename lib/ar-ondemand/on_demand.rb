@@ -19,7 +19,6 @@ module ActiveRecord
         @key_index = @col_indexes[@key_column]
         raise "Unknown index #{key_column}" if @key_index.nil?
 
-        @find_by_method = "find_or_initialize_by_#{(@defaults.keys + [@key_column]).join('_and_')}"
         @has_any_assets = !ids.empty? || @model.unscoped.where(@defaults).exists?
         @new_params = @defaults.dup
         @new_params[@key_column.to_sym] = nil
@@ -28,7 +27,7 @@ module ActiveRecord
           h[row[@key_index]] = row
           h
         end
-        
+
         self
       end
 
@@ -37,8 +36,9 @@ module ActiveRecord
         rec = @results_to_hash[key]
         if rec.nil?
           rec = if @has_any_assets
-                  args = @defaults.values + [key]
-                  @model.unscoped.send(@find_by_method, *args)
+                  @model.unscoped
+                    .where(@defaults.merge(@key_column => key))
+                    .first_or_initialize
                 else
                   @new_params[@key_column.to_sym] = key
                   @model.new @new_params
