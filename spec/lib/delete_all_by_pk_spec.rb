@@ -9,7 +9,7 @@ describe 'DeleteAllByPk' do
       end
 
       it 'should delete record' do
-        AuditRecord.delete_all_by_pk.should eq(1)
+        expect(AuditRecord.delete_all_by_pk).to be 1
       end
     end
 
@@ -19,7 +19,7 @@ describe 'DeleteAllByPk' do
       end
 
       it 'should delete record' do
-        AuditRecord.where('id > 0').delete_all_by_pk.should eq(1)
+        expect(AuditRecord.where('id > 0').delete_all_by_pk).to be 1
       end
     end
   end

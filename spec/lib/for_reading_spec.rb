@@ -9,11 +9,11 @@ describe 'ForReading' do
       end
 
       it 'should do persist' do
-        AuditRecord.all.length.should eq(1)
+        expect(AuditRecord.all.length).to be 1
       end
 
       it 'should do foo' do
-        AuditRecord.first.action.should eq('create')
+        expect(AuditRecord.first.action).to eq 'create'
       end
     end
 
@@ -29,7 +29,7 @@ describe 'ForReading' do
         AuditRecord.where(customer_id: 1).for_reading.each do |r|
           total += 1
         end
-        total.should eq(25)
+        expect(total).to be 25
       end
 
       it 'should support iterating' do
@@ -37,7 +37,7 @@ describe 'ForReading' do
         AuditRecord.for_reading.each do |r|
           total += 1
         end
-        total.should eq(25)
+        expect(total).to be 25
       end
 
       it 'should produce same results as regular iterating' do
@@ -51,7 +51,7 @@ describe 'ForReading' do
           records_b.add r.id
         end
 
-        records_a.should eq(records_b)
+        expect(records_a).to eq records_b
       end
 
     end
