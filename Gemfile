@@ -11,7 +11,5 @@ group :test, :development do
 
   gem 'rspec'
   gem 'factory_girl'
-  gem 'shoulda'
-  gem 'shoulda-matchers'
   gem 'pry'
 end
