@@ -32,6 +32,13 @@ describe 'ForEnumerationReading' do
         expect(total).to be 25
       end
 
+      it 'should support inject iterating' do
+        inj = AuditRecord.where(customer_id: 1).for_enumeration_reading.inject([]) do |i,r|
+          i << r.id
+        end
+        expect(inj.size).to be 25
+      end
+
       it 'should produce same results as regular iterating' do
         records_a = Set.new
         AuditRecord.where(customer_id: 1).for_enumeration_reading.each do |r|
@@ -44,6 +51,22 @@ describe 'ForEnumerationReading' do
         end
 
         expect(records_a).to eq records_b
+      end
+
+      it 'should not allow access outside each enumeration' do
+        obj = nil
+        AuditRecord.where(customer_id: 1).for_enumeration_reading.each do |r|
+          obj = r
+        end
+        expect{obj.id}.to raise_error(RuntimeError)
+      end
+
+      it 'should not allow access outside each inject enumeration' do
+        cache = AuditRecord.where(customer_id: 1).for_enumeration_reading.inject({}) do |h,r|
+          h[r.id] = r
+          h
+        end
+        expect{cache.first[1].id}.to raise_error(RuntimeError)
       end
 
     end

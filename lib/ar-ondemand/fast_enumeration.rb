@@ -6,29 +6,31 @@ module ActiveRecord
         @result_set = result_set
 
         result_set.columns.each_with_index do |name, index|
-          self.define_singleton_method(name) { @row[index] }
+          self.define_singleton_method(name) {
+            raise "Not accessible outside of enumeration" if @row.nil?
+            @row[index]
+          }
         end
       end
 
       def each
         @result_set.rows.each do |r|
-          yield(with_row(r))
+          @row = r
+          yield(self)
           nil
         end
+      ensure
+        @row = nil
       end
 
       def inject(inj)
         @result_set.rows.each do |r|
-          inj = yield(inj, with_row(r))
+          @row = r
+          inj = yield(inj, self)
         end
         inj
-      end
-
-      private
-
-      def with_row(row)
-        @row = row
-        self
+      ensure
+        @row = nil
       end
 
     end
