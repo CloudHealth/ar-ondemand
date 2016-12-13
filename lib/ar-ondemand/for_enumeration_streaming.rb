@@ -16,14 +16,14 @@ module ActiveRecord
           options[:batch_size] ||= 50_000
           options[:id_column] ||= 'id'
           ::Enumerator.new do |eblock|
-            start_id = next_id = 0
+            start_id = 0
             loop do
-              ar.where("#{options[:id_column]} > #{start_id}").order(options[:id_column]).limit(options[:batch_size]).for_enumeration_reading.each do |r|
+              batch = ar.where("#{options[:id_column]} > #{start_id}").order(options[:id_column]).limit(options[:batch_size]).for_enumeration_reading
+              break if batch.size == 0
+              batch.each do |r|
                 eblock << r
-                next_id = r.id
+                start_id = r.id
               end
-              break if start_id == next_id
-              start_id = next_id
             end
           end
         end

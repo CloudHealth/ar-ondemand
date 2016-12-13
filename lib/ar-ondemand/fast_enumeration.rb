@@ -33,6 +33,10 @@ module ActiveRecord
         @row = nil
       end
 
+      def size
+        @result_set.rows.size
+      end
+
     end
   end
 end

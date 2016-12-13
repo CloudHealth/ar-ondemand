@@ -69,6 +69,10 @@ describe 'ForEnumerationReading' do
         expect{cache.first[1].id}.to raise_error(RuntimeError)
       end
 
+      it 'should  return the correct size' do
+        expect(AuditRecord.where(customer_id: 1).for_enumeration_reading.size).to be 25
+      end
+
     end
   end
 end
