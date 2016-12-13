@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'ar-ondemand'
 
-describe 'ForEnumerationReading' do
+describe 'ForEnumerationStreaming' do
   context 'Testing' do
     context 'Ensure Persistance Works' do
       before(:each) do
@@ -26,22 +26,25 @@ describe 'ForEnumerationReading' do
 
       it 'should support iterating' do
         total = 0
-        AuditRecord.where(customer_id: 1).for_enumeration_reading.each do |r|
+        AuditRecord.where(customer_id: 1).for_enumeration_streaming.each do |r|
           total += 1
         end
         expect(total).to be 25
       end
 
-      it 'should support inject iterating' do
-        inj = AuditRecord.where(customer_id: 1).for_enumeration_reading.inject([]) do |i,r|
-          i << r.id
+      it 'should support iterating with small batch size' do
+        total = 0
+        AuditRecord.where(customer_id: 1).for_enumeration_streaming(batch_size: 1).each do |r|
+          total += 1
         end
-        expect(inj.size).to be 25
+        expect(total).to be 25
       end
+
+
 
       it 'should produce same results as regular iterating' do
         records_a = Set.new
-        AuditRecord.where(customer_id: 1).for_enumeration_reading.each do |r|
+        AuditRecord.where(customer_id: 1).for_enumeration_streaming(batch_size: 2).each do |r|
           records_a.add r.id
         end
 
@@ -55,24 +58,19 @@ describe 'ForEnumerationReading' do
 
       it 'should not allow access outside each enumeration' do
         obj = nil
-        AuditRecord.where(customer_id: 1).for_enumeration_reading.each do |r|
+        AuditRecord.where(customer_id: 1).for_enumeration_streaming.each do |r|
           obj = r
         end
         expect{obj.id}.to raise_error(RuntimeError)
       end
 
-      it 'should not allow access outside each inject enumeration' do
-        cache = AuditRecord.where(customer_id: 1).for_enumeration_reading.inject({}) do |h,r|
-          h[r.id] = r
-          h
-        end
-        expect{cache.first[1].id}.to raise_error(RuntimeError)
+      it 'should not allow bad id column' do
+        expect {
+          AuditRecord.where(customer_id: 1).for_enumeration_streaming(id_column: 'foo').each do |r|
+            obj = r
+          end
+        }.to raise_error(ActiveRecord::StatementInvalid)
       end
-
-      it 'should  return the correct size' do
-        expect(AuditRecord.where(customer_id: 1).for_enumeration_reading.size).to be 25
-      end
-
     end
   end
 end
