@@ -4,11 +4,12 @@ module ActiveRecord
 
       def initialize(model, result_set)
         @result_set = result_set
-
+        @column_models = model.columns.inject({}) {|h,c| h[c.name] = c; h}
         result_set.columns.each_with_index do |name, index|
+          column_model = @column_models[name]
           self.define_singleton_method(name) {
             raise "Not accessible outside of enumeration" if @row.nil?
-            @row[index]
+            column_model.type_cast @row[index]
           }
         end
       end
