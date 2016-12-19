@@ -73,6 +73,18 @@ describe 'ForEnumerationReading' do
         expect(AuditRecord.where(customer_id: 1).for_enumeration_reading.size).to be 25
       end
 
+      it 'should  return the correct size' do
+        expect(AuditRecord.where(customer_id: 1).for_enumeration_reading.size).to be 25
+      end
+
+      it 'batch option should return enumerator' do
+        expect(AuditRecord.where(customer_id: 1).for_enumeration_reading(batch_size: 1).class).to be ::Enumerator
+      end
+
+      it 'no batch option should return fastiteration' do
+        expect(AuditRecord.where(customer_id: 1).for_enumeration_reading.class).to be ::ActiveRecord::OnDemand::FastEnumeration
+      end
+
     end
   end
 end

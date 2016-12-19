@@ -7,8 +7,12 @@ module ActiveRecord
       extend ::ActiveSupport::Concern
 
       module ClassMethods
-        def for_enumeration_reading
-          query_for_enumeration_reading self
+        def for_enumeration_reading(options = {})
+          if options[:batch_size]
+            for_enumeration_streaming options
+          else
+            query_for_enumeration_reading self
+          end
         end
 
         private
@@ -16,7 +20,6 @@ module ActiveRecord
           ar = ar.scoped unless ar.respond_to?(:to_sql)
           ::ActiveRecord::OnDemand::FastEnumeration.new(ar.arel.engine, ::ActiveRecord::Base.connection.exec_query(ar.to_sql))
         end
-
       end
     end
   end
