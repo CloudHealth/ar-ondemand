@@ -9,7 +9,16 @@ module ActiveRecord
           column_model = @column_models[name]
           self.define_singleton_method(name) {
             raise "Not accessible outside of enumeration" if @row.nil?
-            column_model.type_cast @row[index]
+
+            # Rails 4.2 renamed type_cast into type_cast_from_database
+            # This is not documented in their upgrade docs or release notes.
+            # See https://github.com/rails/rails/commit/d24e640
+            # TODO Remove this when dropping support for Rails 3
+            if column_model.respond_to?(:type_cast)
+              column_model.type_cast @row[index]
+            else
+              column_model.type_cast_from_database @row[index]
+            end
           }
         end
       end

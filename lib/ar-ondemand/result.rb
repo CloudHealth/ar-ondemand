@@ -53,7 +53,7 @@ module ActiveRecord
       def create_readonly_class
         attrs = @col_indexes.keys.map(&:to_sym)
         return CACHED_READONLY_CLASSES[attrs] if CACHED_READONLY_CLASSES[attrs]
-        CACHED_READONLY_CLASSES[attrs] = ::Struct.new *attrs
+        CACHED_READONLY_CLASSES[attrs] = ::Struct.new(*attrs)
       end
 
       def convert_to_hash(rec)
@@ -61,7 +61,14 @@ module ActiveRecord
         h = {}
         @col_indexes.each_pair do |k, v|
           if @column_types[k]
-            h[k] = @column_types[k].type_cast rec[v]
+            # Rails 4.2 renamed type_cast into type_cast_from_database
+            # This is not documented in their upgrade docs or release notes.
+            # See https://github.com/rails/rails/commit/d24e640
+            if @column_types[k].respond_to?(:type_cast)
+              h[k] = @column_types[k].type_cast rec[v]
+            else
+              h[k] = @column_types[k].type_cast_from_database rec[v]
+            end
           else
             h[k] = rec[v]
           end
@@ -72,9 +79,16 @@ module ActiveRecord
       def convert_to_struct(klass, rec)
         vals = []
         @col_indexes.each_pair do |k, v|
-          vals << @column_types[k].type_cast(rec[v])
+          # Rails 4.2 renamed type_cast into type_cast_from_database
+          # This is not documented in their upgrade docs or release notes.
+          # See https://github.com/rails/rails/commit/d24e640
+          if @column_types[k].respond_to?(:type_cast)
+            vals << @column_types[k].type_cast(rec[v])
+          else
+            vals << @column_types[k].type_cast_from_database(rec[v])
+          end
         end
-        klass.new *vals
+        klass.new(*vals)
       end
     end
   end

@@ -10,17 +10,16 @@ module ActiveRecord
         # Based on find_in_batches function
         def delete_all_by_pk(options = {})
           relation = self
-          relation = self.scoped unless respond_to? :arel
+
+          # TODO Clean this up after dropping support for Rails 3
+          if ActiveRecord::VERSION::MAJOR == 3
+            relation = self.scoped unless respond_to? :arel
+          else
+            relation = self.all unless respond_to? :arel
+          end
 
           unless relation.arel.orders.blank? && relation.arel.taken.blank?
             ::ActiveRecord::Base.logger.warn("Scoped order and limit are ignored, it's forced to be batch order and batch size")
-          end
-
-          if (finder_options = options.except(:start, :batch_size)).present?
-            raise "You can't specify an order, it's forced to be #{batch_order_delete_all_by_pk}" if options[:order].present?
-            raise "You can't specify a limit, it's forced to be the batch_size"  if options[:limit].present?
-
-            relation = apply_finder_options(finder_options)
           end
 
           start = options.delete(:start)
