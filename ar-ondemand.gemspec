@@ -5,7 +5,7 @@ require File.dirname(__FILE__) + '/lib/ar-ondemand/version'
 Gem::Specification.new do |s|
   s.name        = 'ar-ondemand'
   s.version     = ::ArOnDemand::VERSION
-  s.date        = '2015-01-06'
+  s.date        = Date.today.to_s
   s.summary     = 'ActiveRecord On-demand'
   s.description = 'Fast access to database results without the memory overhead of ActiveRecord objects'
   s.authors     = ['Steve Frank']
