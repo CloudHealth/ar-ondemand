@@ -31,7 +31,7 @@ describe 'ForStreaming' do
 
         it 'should support select' do
           total = 0
-          AuditRecord.select([:customer_id]).where(customer_id: 1).for_streaming.each do |r|
+          AuditRecord.select([:id, :customer_id]).where(customer_id: 1).for_streaming.each do |r|
             expect(r).to be_an_instance_of(AuditRecord)
             expect(r.customer_id).to eq(1)
             expect { r.model_type_id }.to raise_error(::ActiveModel::MissingAttributeError)

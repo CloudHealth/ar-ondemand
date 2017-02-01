@@ -6,3 +6,4 @@ spec/log
 .ruby*
 .rspec
 ar-ondemand*.gem
+*Gemfile.lock

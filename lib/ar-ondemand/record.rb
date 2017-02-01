@@ -9,6 +9,11 @@ module ActiveRecord
         @model = model
         @defaults = defaults
         @changes = {}
+
+        # Memoizing Rails 4.2 capability here for performance purposes. See
+        # `#save` method for more details
+        # TODO Remove when dropping Rails 3 support
+        @model_instantiate = @model.respond_to?(:instantiate)
       end
 
       def is_readonly?
@@ -65,10 +70,19 @@ module ActiveRecord
       def save
         raise ActiveRecord::ReadOnlyRecord if is_readonly?
         return nil if @changes.empty?
-        rec = @model.allocate.init_with('attributes' => @record)
+
+        # `@model.allocate.init_with` breaks in Rails 4.2. Construction has been
+        # replaced with `instantiate` (see http://stackoverflow.com/q/20409650/1935861
+        # and https://github.com/rails/rails/blob/31a95ed/activerecord/lib/active_record/persistence.rb#L56-L70).
+        # TODO Remove when dropping Rails 3 support
+        if @model_instantiate
+          rec = @model.instantiate(@record)
+        else
+          rec = @model.allocate.init_with('attributes' => @record)
+        end
         @changes.each_pair do |key, val|
           next if key == 'id'
-          rec[key] = val
+          rec.send("#{key}=".to_sym, val)
         end
         rec.save
         @changes.clear

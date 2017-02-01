@@ -10,7 +10,14 @@ module ActiveRecord
         def for_streaming(options = {})
           options[:batch_size] ||= 50_000
           fr = options.delete(:for_reading)
-          s = self.respond_to?(:scoped) ? self.scoped : self
+
+          # TODO Clean this up after dropping support for Rails 3
+          if ActiveRecord::VERSION::MAJOR == 3
+            s = self.respond_to?(:to_sql) ? self : self.scoped
+          else
+            s = self.respond_to?(:to_sql) ? self : self.all
+          end
+
           ::Enumerator.new do |n|
             s.send(fr ? :for_reading : :find_in_batches, options) do |b|
               b.each { |r| n << r }
