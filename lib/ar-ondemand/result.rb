@@ -9,6 +9,7 @@ module ActiveRecord
         @model = model
         @results = results
         @column_types = Hash[@model.columns.map { |x| [x.name, x] }]
+        determine_type_cast_method
         @col_indexes = HashWithIndifferentAccess[@results.columns.each_with_index.map { |x, i| [x,i] }]
         @raw = options.delete :raw
         @readonly = options.delete :readonly
@@ -56,39 +57,52 @@ module ActiveRecord
         CACHED_READONLY_CLASSES[attrs] = ::Struct.new(*attrs)
       end
 
+      def determine_type_cast_method
+        _, col = @column_types.first
+        return if col.nil?
+        @type_cast = if col.respond_to?(:type)
+                       # Rails 5+
+                       :type
+                     elsif col.respond_to?(:type_cast)
+                       # Rails 3
+                       :type_cast
+                     elsif col.respond_to?(:type_cast_from_database)
+                       # Rails 4.2 renamed type_cast into type_cast_from_database
+                       # This is not documented in their upgrade docs or release notes.
+                       # See https://github.com/rails/rails/commit/d24e640
+                       :type_cast_from_database
+                     else
+                       raise 'Unable to determine type cast method for column'
+                     end
+      end
+
       def convert_to_hash(rec)
         # TODO: Is using HashWithIndifferentAccess[] more efficient?
-        h = {}
+        h = HashWithIndifferentAccess.new
         @col_indexes.each_pair do |k, v|
-          if @column_types[k]
-            # Rails 4.2 renamed type_cast into type_cast_from_database
-            # This is not documented in their upgrade docs or release notes.
-            # See https://github.com/rails/rails/commit/d24e640
-            if @column_types[k].respond_to?(:type_cast)
-              h[k] = @column_types[k].type_cast rec[v]
-            else
-              h[k] = @column_types[k].type_cast_from_database rec[v]
-            end
-          else
-            h[k] = rec[v]
-          end
+          h[k] = cast_value k, rec[v]
         end
-        h.with_indifferent_access
+        h
       end
 
       def convert_to_struct(klass, rec)
         vals = []
         @col_indexes.each_pair do |k, v|
-          # Rails 4.2 renamed type_cast into type_cast_from_database
-          # This is not documented in their upgrade docs or release notes.
-          # See https://github.com/rails/rails/commit/d24e640
-          if @column_types[k].respond_to?(:type_cast)
-            vals << @column_types[k].type_cast(rec[v])
-          else
-            vals << @column_types[k].type_cast_from_database(rec[v])
-          end
+          vals << cast_value(k, rec[v])
         end
         klass.new(*vals)
+      end
+
+      def cast_value(k, v)
+        return v unless @column_types[k]
+        if @type_cast == :type
+          t = @column_types[k].type
+          t.is_a?(::Symbol) ? v : t.cast(v)
+        elsif @type_cast == :type_cast
+          @column_types[k].type_cast v
+        else
+          @column_types[k].type_cast_from_database v
+        end
       end
     end
   end

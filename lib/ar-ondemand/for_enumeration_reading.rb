@@ -13,7 +13,6 @@ module ActiveRecord
 
         private
         def query_for_enumeration_reading(ar)
-
           # TODO Clean this up after dropping support for Rails 3
           if ActiveRecord::VERSION::MAJOR == 3
             ar = ar.scoped unless ar.respond_to?(:to_sql)
@@ -21,9 +20,10 @@ module ActiveRecord
             ar = ar.all unless ar.respond_to?(:to_sql)
           end
 
-          ::ActiveRecord::OnDemand::FastEnumeration.new(ar.arel.engine, ::ActiveRecord::Base.connection.exec_query(ar.to_sql))
+          model = ar.respond_to?(:model) ? ar.model : ar.arel.engine
+          result_set = ::ActiveRecord::Base.connection.exec_query ar.to_sql
+          ::ActiveRecord::OnDemand::FastEnumeration.new model, result_set
         end
-
       end
     end
   end

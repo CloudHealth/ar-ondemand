@@ -61,8 +61,9 @@ module ActiveRecord
             ar = ar.all unless ar.respond_to?(:to_sql)
           end
 
+          model = ar.respond_to?(:model) ? ar.model : ar.arel.engine
           results = ::ActiveRecord::Base.connection.exec_query ar.to_sql
-          ::ActiveRecord::OnDemand::ResultSet.new ar.arel.engine, results, options
+          ::ActiveRecord::OnDemand::ResultSet.new model, results, options
         end
 
         def batch_order_for_reading

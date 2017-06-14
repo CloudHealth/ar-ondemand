@@ -1,3 +1,7 @@
+# 1.3.0
+
+* Support for Rails 5+
+
 # 1.1.4
 
 ## [misc]
