@@ -75,11 +75,11 @@ module ActiveRecord
         # replaced with `instantiate` (see http://stackoverflow.com/q/20409650/1935861
         # and https://github.com/rails/rails/blob/31a95ed/activerecord/lib/active_record/persistence.rb#L56-L70).
         # TODO Remove when dropping Rails 3 support
-        if @model_instantiate
-          rec = @model.instantiate(@record)
-        else
-          rec = @model.allocate.init_with('attributes' => @record)
-        end
+        rec = if @model_instantiate
+                @model.instantiate(@record)
+              else
+                @model.allocate.init_with('attributes' => @record)
+              end
         @changes.each_pair do |key, val|
           next if key == 'id'
           rec.send("#{key}=".to_sym, val)

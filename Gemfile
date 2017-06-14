@@ -9,6 +9,7 @@ group :test, :development do
     gem 'sqlite3'
   end
 
+  gem 'rake'
   gem 'rspec'
   gem 'factory_girl'
   gem 'pry'
