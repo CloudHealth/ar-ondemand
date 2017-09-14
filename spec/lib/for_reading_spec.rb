@@ -54,6 +54,12 @@ describe 'ForReading' do
         expect(records_a).to eq records_b
       end
 
+      it 'should convert date/time fields properly' do
+        AuditRecord.for_reading.each do |r|
+          expect(r.created_at.class).to be Time
+        end
+      end
+
     end
   end
 end
