@@ -9,6 +9,10 @@ module ActiveRecord
         @model = model
         @results = results
         @column_types = Hash[@model.columns.map { |x| [x.name, x] }]
+
+        # For AR 5.x capture the types from registry to use for conversion
+        @ar_types = defined?(ActiveRecord::Type.registry.lookup) ? Hash[@model.columns.map { |x| [x.name, ActiveRecord::Type.registry.lookup(x.type)] }] : nil
+
         determine_type_cast_method
         @col_indexes = HashWithIndifferentAccess[@results.columns.each_with_index.map { |x, i| [x,i] }]
         @raw = options.delete :raw
@@ -60,10 +64,7 @@ module ActiveRecord
       def determine_type_cast_method
         _, col = @column_types.first
         return if col.nil?
-        @type_cast = if col.respond_to?(:type)
-                       # Rails 5+
-                       :type
-                     elsif col.respond_to?(:type_cast)
+        @type_cast = if col.respond_to?(:type_cast)
                        # Rails 3
                        :type_cast
                      elsif col.respond_to?(:type_cast_from_database)
@@ -71,6 +72,9 @@ module ActiveRecord
                        # This is not documented in their upgrade docs or release notes.
                        # See https://github.com/rails/rails/commit/d24e640
                        :type_cast_from_database
+                     elsif @ar_types
+                       # Rails 5+
+                       :type
                      else
                        raise 'Unable to determine type cast method for column'
                      end
@@ -96,7 +100,7 @@ module ActiveRecord
       def cast_value(k, v)
         return v unless @column_types[k]
         if @type_cast == :type
-          t = @column_types[k].type
+          t = @ar_types[k]
           t.is_a?(::Symbol) ? v : t.cast(v)
         elsif @type_cast == :type_cast
           @column_types[k].type_cast v

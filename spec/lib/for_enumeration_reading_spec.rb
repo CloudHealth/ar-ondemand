@@ -73,6 +73,12 @@ describe 'ForEnumerationReading' do
         expect(AuditRecord.where(customer_id: 1).for_enumeration_reading.size).to be 25
       end
 
+      it 'should convert date/time fields properly' do
+        AuditRecord.where(customer_id: 1).for_enumeration_reading.each do |r|
+          expect(r.created_at.class).to be Time
+        end
+      end
+
     end
   end
 end
