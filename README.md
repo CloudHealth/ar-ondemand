@@ -55,7 +55,7 @@ method makes it easy to get access to ActiveRecord-like functionality at 100th t
 
 ### Usage
 
-Let's say you have some Widget's. Instead of:
+Let's say you have some Widgets. Instead of:
 
 ```rb
 Widget.where(customer_id: 1).each { |r| ... }
