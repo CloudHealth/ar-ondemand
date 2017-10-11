@@ -8,7 +8,9 @@ module ActiveRecord
           column_model = @column_models[name]
 
           # For AR 5.x type casting
-          ar_type = ActiveRecord::Type.registry.lookup(column_model.type) if defined?(ActiveRecord::Type.registry.lookup)
+          ar_type = (column_model.type.is_a?(::Symbol) ?
+                         ActiveRecord::Type.registry.lookup(column_model.type) :
+                         column_model.type) if defined?(ActiveRecord::Type.registry.lookup)
           self.define_singleton_method(name) do
             raise 'Not accessible outside of enumeration' if @row.nil?
             if column_model.respond_to?(:type_cast)

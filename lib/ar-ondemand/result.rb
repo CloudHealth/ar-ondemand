@@ -11,7 +11,9 @@ module ActiveRecord
         @column_types = Hash[@model.columns.map { |x| [x.name, x] }]
 
         # For AR 5.x capture the types from registry to use for conversion
-        @ar_types = defined?(ActiveRecord::Type.registry.lookup) ? Hash[@model.columns.map { |x| [x.name, ActiveRecord::Type.registry.lookup(x.type)] }] : nil
+        @ar_types = defined?(ActiveRecord::Type.registry.lookup) ? Hash[@model.columns.map { |x|
+          [x.name, (x.type.is_a?(::Symbol) ?  ActiveRecord::Type.registry.lookup(x.type) : x.type)]
+        }] : nil
 
         determine_type_cast_method
         @col_indexes = HashWithIndifferentAccess[@results.columns.each_with_index.map { |x, i| [x,i] }]
