@@ -8,12 +8,12 @@ I18n.enforce_available_locales = false
 
 Dir['spec/support/**/*.rb'].sort.each { |f| load f }
 
-require 'factory_girl'
+require 'factory_bot'
 
 RSpec.configure do |config|
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
 end
 
-FactoryGirl.find_definitions
+FactoryBot.find_definitions
 
 Dir['spec/app/models/*.rb'].sort.each { |f| load f }
