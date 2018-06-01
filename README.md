@@ -15,7 +15,7 @@ Please note that this library has been written for our needs, and even though it
 production environments, it hasn't seen the myriad ways others use and abuse ActiveRecord, so please experiment
 locally first.
 
-It has been used with ActiveRecord 3.2, MRI 1.9.3, JRuby 1.7 and the MySQL adapter.
+It has been used with ActiveRecord 3.2, MRI 1.9.3, MRI 2.3.3, JRuby 1.7, JRuby 9, all with the MySQL adapter.
 
 # Functionality
 
@@ -118,7 +118,7 @@ Widget.where(customer_id: 1).for_streaming(for_reading: true, batch_size: 1_000_
 ## for_enumeration_streaming
 
 Just as `for_reading` has an enumeration version, `for_streaming` does as well. This helper function
-is aimed at queries or millions of records that need to stream over the results, and only need to pull
+is aimed at queries of millions of records that need to stream over the results, and only need to pull
 out values witin the supplied block.
 
 ### Usage
