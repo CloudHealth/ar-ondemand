@@ -75,23 +75,15 @@ The big limitation is that you can't use `.includes` so you have to be writing a
 Widget.where(customer_id: 1).for_reading(batch_size: 50000).each { |b| b.each { |r| } }
 ```
 
-## raw_results
+## for_enumeration_reading
 
-This is just a nice little helper to get the raw database results, which you'd get by calling `ActiveRecord::Base.connection.select_all`
-but for some reason you can't call that on a model.
-
-```rb
-ActiveRecord::Base.connection.select_all "select * from widgets"
-ActiveRecord::Base.connection.select_all "select * from widgets where customer_id = 1"
-ActiveRecord::Base.connection.select_all "select * from widgets where customer_id = 1 limit 100000"
-```
-
-### Usage
+This version of `for_reading` allows even faster access to the record when you just need to pull out some properties
+while looping over the dataset. Access to the data is *only* available in the block passed to `for_enumeration_reading`.
 
 ```rb
-Widget.raw_results
-Widget.where(customer_id: 1).raw_results
-Widget.where(customer_id: 1).limit(100_000).raw_results
+res = Widget.where(customer_id: 1).for_enumeration_reading.inject([]) do |i, r|
+    i << [r.id, r.name]
+end
 ```
 
 ## for_streaming
@@ -121,6 +113,40 @@ Additional usage:
 Widget.where(customer_id: 1).for_streaming(batch_size: 100_000).each { |r| }
 Widget.where(customer_id: 1).for_streaming(for_reading: true).each { |r| }
 Widget.where(customer_id: 1).for_streaming(for_reading: true, batch_size: 1_000_000).each { |r| }
+```
+
+## for_enumeration_streaming
+
+Just as `for_reading` has an enumeration version, `for_streaming` does as well. This helper function
+is aimed at queries or millions of records that need to stream over the results, and only need to pull
+out values witin the supplied block.
+
+### Usage
+
+```rb
+res = []
+Widget.where(customer_id: 1).for_enumeration_streaming(batch_size: 200_000).each do |r|
+  res.add [r.id, r.name]
+end
+```
+
+## raw_results
+
+This is just a nice little helper to get the raw database results, which you'd get by calling `ActiveRecord::Base.connection.select_all`
+but for some reason you can't call that on a model.
+
+```rb
+ActiveRecord::Base.connection.select_all "select * from widgets"
+ActiveRecord::Base.connection.select_all "select * from widgets where customer_id = 1"
+ActiveRecord::Base.connection.select_all "select * from widgets where customer_id = 1 limit 100000"
+```
+
+### Usage
+
+```rb
+Widget.raw_results
+Widget.where(customer_id: 1).raw_results
+Widget.where(customer_id: 1).limit(100_000).raw_results
 ```
 
 ## delete_all_by_pk
