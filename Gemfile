@@ -11,6 +11,6 @@ group :test, :development do
 
   gem 'rake'
   gem 'rspec'
-  gem 'factory_girl'
+  gem 'factory_bot'
   gem 'pry'
 end
