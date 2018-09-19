@@ -71,10 +71,14 @@ describe 'ForStreaming' do
         end
 
         it 'should allow reading computed fields' do
-          AuditRecord.where(customer_id: 1).select(:id).select("id as id_computed, action as action_computed").for_streaming(for_reading: true).each do |r|
+          AuditRecord.where(customer_id: 1).select(:id).select("id as id_computed, action as action_computed, DATE(created_at)").for_streaming(for_reading: true).each do |r|
             expect(r.action_computed).to eq('create')
             expect(r.action_computed).to be_an_instance_of(String)
             expect(r.id_computed).to be_an_instance_of(Fixnum)
+
+            # no date typecasting, but we have a String
+            expect(r["DATE(created_at)"]).to be_an_instance_of(String)
+            expect(r["DATE(created_at)"]).to eq(Date.today.to_s)
           end
         end
       end
