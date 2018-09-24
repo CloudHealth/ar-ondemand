@@ -71,6 +71,14 @@ describe 'ForEnumerationStreaming' do
           end
         }.to raise_error(ActiveRecord::StatementInvalid)
       end
+
+      it 'should allow reading computed fields' do
+        AuditRecord.where(customer_id: 1).select(:id).select("id as id_computed, action as action_computed").for_enumeration_streaming.each do |r|
+          expect(r.action_computed).to eq('create')
+          expect(r.action_computed).to be_an_instance_of(String)
+          expect(r.id_computed).to be_an_instance_of(Fixnum)
+        end
+      end
     end
   end
 end

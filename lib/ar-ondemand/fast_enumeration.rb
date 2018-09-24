@@ -10,7 +10,7 @@ module ActiveRecord
           # For AR 5.x type casting
           ar_type = (column_model.type.is_a?(::Symbol) ?
                          ActiveRecord::Type.registry.lookup(column_model.type) :
-                         column_model.type) if defined?(ActiveRecord::Type.registry.lookup)
+                         column_model.type) if column_model && defined?(ActiveRecord::Type.registry.lookup)
           self.define_singleton_method(name) do
             raise 'Not accessible outside of enumeration' if @row.nil?
             if column_model.respond_to?(:type_cast)
@@ -25,7 +25,7 @@ module ActiveRecord
               # Rails 5+
               ar_type.is_a?(::Symbol) ? @row[index] : ar_type.cast(@row[index])
             else
-              raise 'Unable to determine type cast method for column'
+              @row[index]
             end
           end
         end
