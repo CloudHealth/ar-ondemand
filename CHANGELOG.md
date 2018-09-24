@@ -1,3 +1,7 @@
+# 1.3.2
+
+* Select customer params, not just attributes of the model
+
 # 1.3.0
 
 * Support for Rails 5+
