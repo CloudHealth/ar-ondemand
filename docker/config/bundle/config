@@ -1,0 +1,4 @@
+---
+BUNDLE_MIRROR__HTTPS://RUBYGEMS.ORG/: "https://artifactory.mgmt.cloudhealthtech.com/artifactory/api/gems/rubygems/"
+BUNDLE_PATH: "/home/cloudhealth/bundle/"
+BUNDLE_DEFAULT_INSTALL_USES_PATH: "/home/cloudhealth/bundle/"
