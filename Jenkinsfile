@@ -33,6 +33,15 @@ node('management-testing') {
                         sh 'docker exec ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER} /bin/bash -c -l "bundle exec rspec --format RspecJunitFormatter --out ar_ondemand_rspec_2-3_${JOB_BASE_NAME}_${BUILD_NUMBER}.xml"'
                     } finally {
                         junit(testResults: 'ar_ondemand_rspec_2-3_${JOB_BASE_NAME}_${BUILD_NUMBER}.xml')
+                        publishHTML (target: [
+                              allowMissing: false,
+                              alwaysLinkToLastBuild: false,
+                              keepAll: true,
+                              reportDir: 'coverage',
+                              reportFiles: 'index.html',
+                              reportName: "SimpleCov Report"
+                         ])
+                        archiveArtifacts('coverage/.resultset.json')
                     }
                 }
             }
