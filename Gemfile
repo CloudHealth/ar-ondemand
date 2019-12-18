@@ -14,4 +14,8 @@ group :test, :development do
   gem 'factory_bot'
   gem 'pry'
   gem 'rspec_junit_formatter', '0.3.0'
+  gem 'simplecov'
+  gem 'simplecov-console'
+  gem 'simplecov-json'
+  gem 'simplecov-rcov'
 end
