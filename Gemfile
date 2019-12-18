@@ -6,7 +6,7 @@ group :test, :development do
   if RUBY_ENGINE == 'jruby'
     gem 'activerecord-jdbc-adapter'
   else
-    gem 'sqlite3'
+    gem 'sqlite3', '~> 1.3', '< 1.4'
   end
 
   gem 'rake'
