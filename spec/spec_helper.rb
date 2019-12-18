@@ -3,6 +3,21 @@ require 'rspec/core'
 require 'rspec/expectations'
 require 'active_support'
 require 'active_record'
+require 'simplecov'
+require 'simplecov-console'
+require 'simplecov-json'
+require 'simplecov-rcov'
+
+SimpleCov.formatters = [
+  SimpleCov::Formatter::Console,
+  SimpleCov::Formatter::HTMLFormatter,
+  SimpleCov::Formatter::JSONFormatter,
+  SimpleCov::Formatter::RcovFormatter
+]
+
+SimpleCov.start do
+  add_filter '/spec'
+end
 
 I18n.enforce_available_locales = false
 
