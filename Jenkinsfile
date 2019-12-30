@@ -43,8 +43,6 @@ node('management-testing') {
             sh "exit 0"
             currentBuild.result = 'FAILURE'
         }
-        
-        codeCoverageRspec()
     } finally {
         sh "docker stop ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER} && docker rm -f ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER}"
     }
