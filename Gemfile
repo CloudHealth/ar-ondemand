@@ -6,7 +6,7 @@ group :test, :development do
   if RUBY_ENGINE == 'jruby'
     gem 'activerecord-jdbc-adapter'
   else
-    gem 'sqlite3', '~> 1.3', '< 1.4'
+    gem 'sqlite3'
   end
 
   gem 'rake'
@@ -14,8 +14,4 @@ group :test, :development do
   gem 'factory_bot'
   gem 'pry'
   gem 'rspec_junit_formatter', '0.3.0'
-  gem 'simplecov'
-  gem 'simplecov-console'
-  gem 'simplecov-json'
-  gem 'simplecov-rcov'
 end
