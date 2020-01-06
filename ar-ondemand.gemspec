@@ -19,8 +19,8 @@ Gem::Specification.new do |s|
 
   s.require_paths = %w(lib)
 
-  s.add_dependency 'activesupport', '>= 3.2'
-  s.add_dependency 'activerecord',  '>= 3.2'
+  s.add_dependency 'activesupport', '~> 3.2.22'
+  s.add_dependency 'activerecord',  '~> 3.2.22'
 
   s.add_development_dependency 'bundler', '>= 1.14'
   s.add_development_dependency 'rake', '>= 12.0'
