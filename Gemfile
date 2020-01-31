@@ -2,6 +2,9 @@ source 'https://rubygems.org'
 
 gemspec
 
+# TODO: Update this pin to to ~0.11.0. when we upgrade to Ruby > 2.4
+gem 'simplecov-html', '0.10.2'
+
 group :test, :development do
   if RUBY_ENGINE == 'jruby'
     gem 'activerecord-jdbc-adapter'
