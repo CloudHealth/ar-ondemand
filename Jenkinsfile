@@ -21,12 +21,8 @@ node('management-testing') {
             stage('Setup_2.3.3-3.0') {
 
                 checkout scm
-                withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'GIT_SSH_KEY')]) {
-                  sh 'cp -n $GIT_SSH_KEY docker/config/ssh/id_rsa'
-                  sh "docker build -f docker/Dockerfile -t ar_ondemand_image ."
-                  sh "docker run -dit --name=ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER} -e RAILS_ENV=test -v \"${WORKSPACE}/docker/config/ssh/:/home/cloudhealth/.ssh/\" -v ${WORKSPACE}/:/home/cloudhealth/ar-ondemand/ ar_ondemand_image /bin/bash"
-                }
-
+                sh "docker build -f docker/Dockerfile -t ar_ondemand_image ."
+                sh "docker run -dit --name=ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER} -e RAILS_ENV=test -v ${WORKSPACE}/:/home/cloudhealth/ar-ondemand/ ar_ondemand_image /bin/bash"
            }
 
         }
@@ -36,7 +32,6 @@ node('management-testing') {
             stage('Run Bundle Install') {
 
                 sh "docker exec ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER} /bin/bash -c  -l 'bundle install --no-deployment --binstubs=bin'"
-                sh 'rm -rv docker/config/ssh/id_rsa'
 
             }
 
