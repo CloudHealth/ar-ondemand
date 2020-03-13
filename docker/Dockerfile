@@ -9,5 +9,3 @@ WORKDIR /home/cloudhealth/ar-ondemand
 
 RUN /bin/bash -c -l "bundle --version"
 RUN /bin/bash -c -l "RAILS_ENV=test BUNDLE_GEMFILE=rails_3.2.Gemfile bundle install --no-deployment --binstubs=bin"
-
-RUN rm /home/cloudhealth/.ssh/id_rsa
