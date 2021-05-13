@@ -21,4 +21,5 @@ group :test, :development do
   gem 'simplecov-console'
   gem 'simplecov-json'
   gem 'simplecov-rcov'
+  gem 'docile', '~> 1.3.5'
 end
