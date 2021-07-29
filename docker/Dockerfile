@@ -1,4 +1,5 @@
 FROM 297322132092.dkr.ecr.us-east-1.amazonaws.com/cloudpercept/app:ubuntu18-base
+RUN apt-get update && apt-get upgrade -y
 
 USER root
 
