@@ -4,6 +4,7 @@ gemspec
 
 # TODO: Update this pin to to ~0.11.0. when we upgrade to Ruby > 2.4
 gem 'simplecov-html', '0.10.2'
+gem 'unicode-display_width', '2.3'
 
 group :test, :development do
   if RUBY_ENGINE == 'jruby'
