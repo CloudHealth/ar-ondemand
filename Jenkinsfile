@@ -13,6 +13,7 @@ if (env.BRANCH_NAME == 'master') {
 
 // NODE FOR RUBY2.3.3-RAILS3.2
 node('management-testing') {
+    withCredentials([usernamePassword(credentialsId: 'BC_ARTIFACTORY', usernameVariable: 'BC_ARTIFACTORY_USER', passwordVariable: 'BC_ARTIFACTORY_PASS')]) {
 
     try {
 
@@ -21,6 +22,7 @@ node('management-testing') {
             stage('Setup_2.3.3-3.0') {
 
                 checkout scm
+                sh "echo $BC_ARTIFACTORY_PASS | docker login -u $BC_ARTIFACTORY_USER --password-stdin tis-cost-docker-virtual.usw1.packages.broadcom.com"
                 sh "docker build -f docker/Dockerfile -t ar_ondemand_image ."
                 sh "docker run -dit --name=ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER} -e RAILS_ENV=test -v ${WORKSPACE}/:/home/cloudhealth/ar-ondemand/ ar_ondemand_image /bin/bash"
            }
@@ -65,5 +67,5 @@ node('management-testing') {
     } finally {
         sh "docker stop ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER} && docker rm -f ar_ondemand-app-${JOB_BASE_NAME}_${BUILD_NUMBER}"
     }
-
+    }
 }
